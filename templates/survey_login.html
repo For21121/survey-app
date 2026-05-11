@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в опрос</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="card center">
+            <a href="/" class="back-link">← На главную</a>
+            <div class="icon-large">🔑</div>
+            <h1>Вход в опрос</h1>
+            <p class="subtitle">Введите код доступа</p>
+            {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
+            <form method="POST" class="login-form">
+                <input type="text" name="token" placeholder="Код доступа" class="text-input" required autofocus>
+                <button type="submit" class="btn btn-primary btn-large">Войти в опрос</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

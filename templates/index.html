@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опросник по теме курения</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="card center">
+            <div class="logo">🚬</div>
+            <h1>Опросник по теме курения</h1>
+            <p class="subtitle">Анонимный исследовательский опрос</p>
+            <div class="login-choices">
+                <a href="/survey-login" class="login-card user-card">
+                    <div class="icon">📝</div>
+                    <h3>Пройти опрос</h3>
+                    <p>У меня есть код доступа</p>
+                    <span class="btn-arrow">→</span>
+                </a>
+                <a href="/admin-login" class="login-card admin-card">
+                    <div class="icon">📊</div>
+                    <h3>Вход для администратора</h3>
+                    <p>Просмотр результатов и отчётов</p>
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

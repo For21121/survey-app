@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опросник о курении</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <h1>📝 Опросник о курении</h1>
+            <p class="subtitle">Анонимный опрос. Все данные конфиденциальны.</p>
+            <form id="surveyForm" action="/submit" method="POST">
+                {% for q in questions %}
+                <div class="question-block" id="q{{ q.id }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+                    <div class="question-number">Вопрос {{ q.id }} из {{ questions|length }}</div>
+                    <h3>{{ q.text }}</h3>
+                    {% if q.type == 'radio' %}
+                        <div class="options-list">
+                        {% for opt in q.options %}
+                            <label class="option-label">
+                                <input type="radio" name="{{ q.id }}" value="{{ opt }}" required>
+                                <span class="checkmark"></span>
+                                <span class="opt-text">{{ opt }}</span>
+                            </label>
+                        {% endfor %}
+                        </div>
+                    {% elif q.type == 'checkbox' %}
+                        <div class="options-list">
+                        {% for opt in q.options %}
+                            <label class="option-label">
+                                <input type="checkbox" name="{{ q.id }}" value="{{ opt }}">
+                                <span class="checkmark checkbox"></span>
+                                <span class="opt-text">{{ opt }}</span>
+                            </label>
+                        {% endfor %}
+                        </div>
+                        <p class="hint">Можно выбрать несколько вариантов</p>
+                    {% elif q.type == 'text' %}
+                        <input type="text" name="{{ q.id }}" placeholder="{{ q.placeholder }}" class="text-input" required>
+                    {% elif q.type == 'textarea' %}
+                        <textarea name="{{ q.id }}" placeholder="{{ q.placeholder }}" class="textarea-input" rows="4" required></textarea>
+                    {% elif q.type == 'number' %}
+                        <input type="number" name="{{ q.id }}" placeholder="{{ q.placeholder }}" class="text-input" min="10" max="100" required>
+                    {% endif %}
+                    <div class="nav-buttons">
+                        {% if not loop.first %}<button type="button" class="btn btn-secondary" onclick="prevQuestion({{ q.id }})">← Назад</button>{% endif %}
+                        {% if not loop.last %}<button type="button" class="btn btn-primary" onclick="nextQuestion({{ q.id }})">Далее →</button>
+                        {% else %}<button type="submit" class="btn btn-success">✅ Отправить опрос</button>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </form>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/survey.js') }}"></script>
+</body>
+</html>

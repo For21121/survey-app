@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="card admin-header">
+            <div class="admin-top">
+                <h1>📊 Админ-панель</h1>
+                <a href="/admin/logout" class="btn btn-secondary">Выйти</a>
+            </div>
+            <div class="stats-header">
+                <div class="stat-box">
+                    <div class="stat-number">{{ total }}</div>
+                    <div class="stat-label">Всего ответов</div>
+                </div>
+            </div>
+        </div>
+        {% for q in questions %}
+        {% set q_id = q.id|string %}
+        {% set q_stats = stats.get(q_id, {}) %}
+        <div class="card report-card">
+            <h2>Вопрос {{ q.id }}: {{ q.text }}</h2>
+            {% if q.type in ['radio', 'checkbox'] and q_stats.get('percentages') %}
+                <table class="stats-table">
+                    <thead><tr><th>Вариант</th><th>Количество</th><th>Процент</th><th>График</th></tr></thead>
+                    <tbody>
+                        {% for opt in q.options %}
+                        {% set data = q_stats.percentages.get(opt, {'count': 0, 'percent': 0}) %}
+                        <tr>
+                            <td>{{ opt }}</td>
+                            <td>{{ data.count }}</td>
+                            <td><strong>{{ data.percent }}%</strong></td>
+                            <td><div class="bar-bg"><div class="bar-fill" style="width: {{ data.percent }}%"></div></div></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% elif q.type == 'number' and q_stats.get('average') %}
+                <div class="number-stats">
+                    <div class="stat-row"><span>Средний возраст:</span><strong>{{ q_stats.average }} лет</strong></div>
+                    <div class="stat-row"><span>Минимальный:</span><strong>{{ q_stats.min }} лет</strong></div>
+                    <div class="stat-row"><span>Максимальный:</span><strong>{{ q_stats.max }} лет</strong></div>
+                </div>
+                {% if q_stats.get('age_groups') %}
+                <h3>Возрастные группы:</h3>
+                <table class="stats-table">
+                    <thead><tr><th>Группа</th><th>Количество</th><th>Процент</th></tr></thead>
+                    <tbody>
+                        {% for group, data in q_stats.age_groups.items() %}
+                        <tr><td>{{ group }}</td><td>{{ data.count }}</td><td><strong>{{ data.percent }}%</strong></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            {% else %}
+                <div class="text-answers">
+                    <p><strong>Всего ответов: {{ q_stats.get('total_answers', 0) }}</strong></p>
+                    {% for answer in q_stats.get('answers', []) %}<div class="answer-item">• {{ answer }}</div>{% endfor %}
+                    {% if q_stats.get('total_answers', 0) > 50 %}<p class="hint">... и ещё {{ q_stats.total_answers - 50 }} ответов</p>{% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div class="card">
+            <h2>📋 Сырые данные (JSON)</h2>
+            <details><summary>Развернуть все ответы</summary><pre class="json-output">{{ responses|tojson(indent=2) }}</pre></details>
+        </div>
+    </div>
+</body>
+</html>
