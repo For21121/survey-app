@@ -8,10 +8,8 @@ import os
 SURVEY_CODE = "opros-2024"
 ADMIN_PASSWORD = "admin-2024"
 
-# Путь к файлу с ответами
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'responses.json')
 
-# ===== ВОПРОСЫ =====
 QUESTIONS = [
     {"id": 1, "text": "Курите ли вы или хотите попробовать?", "type": "radio", "options": ["Да", "Нет", "Хочу попробовать"]},
     {"id": 2, "text": "Если да, что вы курите?", "type": "radio", "options": ["Сигареты", "Электронные сигареты", "Оба варианта", "Не курю"]},
@@ -24,8 +22,6 @@ QUESTIONS = [
     {"id": 9, "text": "Ваш пол", "type": "radio", "options": ["Мужской", "Женский"]},
     {"id": 10, "text": "Ваш возраст", "type": "number", "placeholder": "Введите ваш возраст"}
 ]
-
-# ===== ФУНКЦИИ =====
 
 def load_responses():
     if os.path.exists(DATA_FILE):
@@ -83,7 +79,7 @@ def calculate_stats(responses):
         stats[q_id] = q_stats
     return stats
 
-# ===== CSS СТИЛИ =====
+# ===== CSS =====
 st.markdown("""
 <style>
     .main { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
@@ -92,25 +88,13 @@ st.markdown("""
     h1 { color: #2d3748 !important; text-align: center; }
     h2 { color: #4a5568 !important; }
     h3 { color: #2d3748 !important; }
-    .stButton>button { 
-        width: 100%; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: 600;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; 
-        color: white !important; border: none !important;
-    }
+    .stButton>button { width: 100%; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; border: none !important; }
     .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
-    .success-btn>button { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important; }
-    .user-btn>button { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important; }
-    .admin-btn>button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
-    .stTextInput>div>div>input, .stNumberInput>div>div>input, .stTextArea>div>textarea {
-        border: 2px solid #e2e8f0 !important; border-radius: 12px !important; padding: 15px !important;
-    }
+    .stTextInput>div>div>input, .stNumberInput>div>div>input, .stTextArea>div>textarea { border: 2px solid #e2e8f0 !important; border-radius: 12px !important; padding: 15px !important; }
     .stRadio>div { background: #f7fafc; border-radius: 12px; padding: 10px; }
     .stCheckbox>div { background: #f7fafc; border-radius: 12px; padding: 10px; }
     .stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 16px; text-align: center; }
     .stat-number { font-size: 36px; font-weight: 700; }
-    .stat-label { font-size: 14px; opacity: 0.9; }
-    .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 4px; }
     .bar-bg { width: 100%; height: 20px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
     .bar-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 10px; }
     .answer-item { padding: 10px; border-bottom: 1px solid #e2e8f0; }
@@ -122,23 +106,24 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ===== ИНИЦИАЛИЗАЦИЯ СОСТОЯНИЯ =====
-if 'page' not in st.session_state:
-    st.session_state.page = 'home'
-if 'survey_access' not in st.session_state:
-    st.session_state.survey_access = False
-if 'admin_access' not in st.session_state:
-    st.session_state.admin_access = False
-if 'answers' not in st.session_state:
-    st.session_state.answers = {}
-if 'current_q' not in st.session_state:
-    st.session_state.current_q = 0
+# ===== ИНИЦИАЛИЗАЦИЯ =====
+def init_session():
+    defaults = {
+        'page': 'home',
+        'survey_access': False,
+        'admin_access': False,
+        'answers': {},
+        'current_q': 0,
+        'survey_token': '',
+        'admin_pass': ''
+    }
+    for key, val in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = val
 
-def go_to(page):
-    st.session_state.page = page
-    st.rerun()
+init_session()
 
-# ===== ГЛАВНАЯ СТРАНИЦА =====
+# ===== ГЛАВНАЯ =====
 if st.session_state.page == 'home':
     st.markdown('<div class="logo">🚬</div>', unsafe_allow_html=True)
     st.markdown('<h1>Опросник по теме курения</h1>', unsafe_allow_html=True)
@@ -146,89 +131,107 @@ if st.session_state.page == 'home':
 
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown('<div class="user-btn">', unsafe_allow_html=True)
+        st.markdown('<div style="text-align:center">', unsafe_allow_html=True)
         if st.button("📝 Пройти опрос", key="btn_survey"):
-            go_to('survey_login')
+            st.session_state.page = 'survey_login'
+            st.session_state.survey_access = False
+            st.experimental_rerun()
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('<p class="center" style="color: #718096; font-size: 14px;">У меня есть код доступа</p>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="admin-btn">', unsafe_allow_html=True)
+        st.markdown('<div style="text-align:center">', unsafe_allow_html=True)
         if st.button("📊 Вход для администратора", key="btn_admin"):
-            go_to('admin_login')
+            st.session_state.page = 'admin_login'
+            st.session_state.admin_access = False
+            st.experimental_rerun()
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('<p class="center" style="color: #718096; font-size: 14px;">Просмотр результатов</p>', unsafe_allow_html=True)
 
 # ===== ВХОД В ОПРОС =====
 elif st.session_state.page == 'survey_login':
-    st.markdown('<a href="#" onclick="window.location.reload()">← На главную</a>', unsafe_allow_html=True)
+    if st.button("← На главную", key="btn_home1"):
+        st.session_state.page = 'home'
+        st.experimental_rerun()
+
     st.markdown('<div class="icon">🔑</div>', unsafe_allow_html=True)
     st.markdown('<h1>Вход в опрос</h1>', unsafe_allow_html=True)
 
-    token = st.text_input("Код доступа", placeholder="Введите код", key="survey_token")
+    token = st.text_input("Код доступа", value=st.session_state.get('survey_token', ''), key="survey_token_input")
 
     if st.button("Войти в опрос", key="btn_survey_login"):
         if token.strip() == SURVEY_CODE:
             st.session_state.survey_access = True
             st.session_state.current_q = 0
             st.session_state.answers = {}
-            go_to('survey')
+            st.session_state.page = 'survey'
+            st.experimental_rerun()
         else:
             st.markdown('<div class="error">Неверный код доступа</div>', unsafe_allow_html=True)
 
 # ===== ОПРОС =====
 elif st.session_state.page == 'survey':
     if not st.session_state.survey_access:
-        go_to('survey_login')
+        st.session_state.page = 'survey_login'
+        st.experimental_rerun()
 
     q = QUESTIONS[st.session_state.current_q]
     progress = (st.session_state.current_q + 1) / len(QUESTIONS) * 100
 
-    st.markdown(f'<div class="progress-bar"><div class="progress-fill" style="width: {progress}%"></div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:30px;"><div style="width:{progress}%;height:100%;background:linear-gradient(90deg, #667eea, #764ba2);border-radius:4px;"></div></div>', unsafe_allow_html=True)
     st.markdown(f'<p style="color: #667eea; font-weight: 600; font-size: 14px;">Вопрос {q["id"]} из {len(QUESTIONS)}</p>', unsafe_allow_html=True)
     st.markdown(f'<h3>{q["text"]}</h3>', unsafe_allow_html=True)
 
+    q_key = f"q_{q['id']}"
+
     if q["type"] == "radio":
-        answer = st.radio("", q["options"], key=f"q_{q['id']}")
-        if answer:
-            st.session_state.answers[str(q["id"])] = answer
+        options = q["options"]
+        current_val = st.session_state.answers.get(str(q["id"]), options[0])
+        answer = st.radio("", options, index=options.index(current_val) if current_val in options else 0, key=q_key)
+        st.session_state.answers[str(q["id"])] = answer
 
     elif q["type"] == "checkbox":
         answers = []
-        for opt in q["options"]:
-            if st.checkbox(opt, key=f"q_{q['id']}_{opt}"):
+        for i, opt in enumerate(q["options"]):
+            checked = opt in st.session_state.answers.get(str(q["id"]), [])
+            if st.checkbox(opt, value=checked, key=f"{q_key}_{i}"):
                 answers.append(opt)
         st.session_state.answers[str(q["id"])] = answers
 
     elif q["type"] == "text":
-        answer = st.text_input("", placeholder=q.get("placeholder", ""), key=f"q_{q['id']}")
+        current = st.session_state.answers.get(str(q["id"]), "")
+        answer = st.text_input("", value=current, placeholder=q.get("placeholder", ""), key=q_key)
         if answer:
             st.session_state.answers[str(q["id"])] = answer
 
     elif q["type"] == "textarea":
-        answer = st.text_area("", placeholder=q.get("placeholder", ""), key=f"q_{q['id']}")
+        current = st.session_state.answers.get(str(q["id"]), "")
+        answer = st.text_area("", value=current, placeholder=q.get("placeholder", ""), key=q_key)
         if answer:
             st.session_state.answers[str(q["id"])] = answer
 
     elif q["type"] == "number":
-        answer = st.number_input("", min_value=10, max_value=100, key=f"q_{q['id']}")
-        if answer:
-            st.session_state.answers[str(q["id"])] = str(int(answer))
+        current = st.session_state.answers.get(str(q["id"]), 18)
+        try:
+            current_int = int(current) if current else 18
+        except:
+            current_int = 18
+        answer = st.number_input("", min_value=10, max_value=100, value=current_int, key=q_key)
+        st.session_state.answers[str(q["id"])] = str(int(answer))
 
     col1, col2 = st.columns(2)
     with col1:
         if st.session_state.current_q > 0:
             if st.button("← Назад", key="btn_back"):
                 st.session_state.current_q -= 1
-                st.rerun()
+                st.experimental_rerun()
 
     with col2:
         if st.session_state.current_q < len(QUESTIONS) - 1:
             if st.button("Далее →", key="btn_next"):
                 st.session_state.current_q += 1
-                st.rerun()
+                st.experimental_rerun()
         else:
-            st.markdown('<div class="success-btn">', unsafe_allow_html=True)
             if st.button("✅ Отправить опрос", key="btn_submit"):
                 responses = load_responses()
                 answers = dict(st.session_state.answers)
@@ -237,51 +240,56 @@ elif st.session_state.page == 'survey':
                 responses.append(answers)
                 save_responses(responses)
                 st.session_state.survey_access = False
-                go_to('thanks')
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.session_state.answers = {}
+                st.session_state.current_q = 0
+                st.session_state.page = 'thanks'
+                st.experimental_rerun()
 
 # ===== СПАСИБО =====
 elif st.session_state.page == 'thanks':
-    st.markdown('<div class="success-icon" style="font-size: 60px; text-align: center;">🎉</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:60px;text-align:center;">🎉</div>', unsafe_allow_html=True)
     st.markdown('<h1>Спасибо за участие!</h1>', unsafe_allow_html=True)
     st.markdown('<p class="center">Ваши ответы успешно сохранены.</p>', unsafe_allow_html=True)
-    if st.button("На главную", key="btn_home"):
-        go_to('home')
+    if st.button("На главную", key="btn_home2"):
+        st.session_state.page = 'home'
+        st.experimental_rerun()
 
 # ===== ВХОД АДМИНА =====
 elif st.session_state.page == 'admin_login':
+    if st.button("← На главную", key="btn_home3"):
+        st.session_state.page = 'home'
+        st.experimental_rerun()
+
     st.markdown('<div class="icon">🔐</div>', unsafe_allow_html=True)
     st.markdown('<h1>Вход для администратора</h1>', unsafe_allow_html=True)
 
-    password = st.text_input("Пароль", type="password", key="admin_pass")
+    password = st.text_input("Пароль", type="password", key="admin_pass_input")
 
     if st.button("Войти", key="btn_admin_login"):
         if password.strip() == ADMIN_PASSWORD:
             st.session_state.admin_access = True
-            go_to('admin')
+            st.session_state.page = 'admin'
+            st.experimental_rerun()
         else:
             st.markdown('<div class="error">Неверный пароль</div>', unsafe_allow_html=True)
-
-    if st.button("← На главную", key="btn_home2"):
-        go_to('home')
 
 # ===== АДМИН-ПАНЕЛЬ =====
 elif st.session_state.page == 'admin':
     if not st.session_state.admin_access:
-        go_to('admin_login')
+        st.session_state.page = 'admin_login'
+        st.experimental_rerun()
 
     responses = load_responses()
     stats = calculate_stats(responses)
 
     st.markdown('<h1>📊 Админ-панель</h1>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("Выйти", key="btn_logout"):
-            st.session_state.admin_access = False
-            go_to('home')
+    if st.button("Выйти", key="btn_logout"):
+        st.session_state.admin_access = False
+        st.session_state.page = 'home'
+        st.experimental_rerun()
 
-    st.markdown(f'<div class="stat-box"><div class="stat-number">{len(responses)}</div><div class="stat-label">Всего ответов</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="stat-box"><div class="stat-number">{len(responses)}</div><div style="font-size:14px;opacity:0.9;">Всего ответов</div></div>', unsafe_allow_html=True)
 
     for q in QUESTIONS:
         q_id = str(q["id"])
@@ -291,7 +299,7 @@ elif st.session_state.page == 'admin':
             if q["type"] in ["radio", "checkbox"] and q_stats.get("percentages"):
                 for opt in q["options"]:
                     data = q_stats["percentages"].get(opt, {"count": 0, "percent": 0})
-                    st.write(f"**{opt}**: {data['count']} человек ({data['percent']}%)")
+                    st.write(f"**{opt}**: {data['count']} ({data['percent']}%)")
                     st.markdown(f'<div class="bar-bg"><div class="bar-fill" style="width: {data["percent"]}%"></div></div>', unsafe_allow_html=True)
 
             elif q["type"] == "number" and q_stats.get("average"):
